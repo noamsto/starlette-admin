@@ -114,14 +114,27 @@ class BaseSQLAModelConverter(BaseModelConverter):
                             )
                         )
                 elif isinstance(attr, ColumnProperty):
-                    assert (
-                        len(attr.columns) == 1
-                    ), "Multiple-column properties are not supported"
-                    column = attr.columns[0]
-                    if not column.foreign_keys:
+                    # Handle inherited primary keys (i.e.: polymorphic inheritance)
+                    is_inherited_pk = mapper.inherits is not None and any(
+                        col.primary_key for col in attr.columns
+                    )
+                    if is_inherited_pk:
+                        # Just use the column as is, bypassing restrictions
+                        column = attr.columns[0]
                         converted_fields.append(
                             self.convert(name=attr.key, type=column.type, column=column)
                         )
+                    else:
+                        assert len(attr.columns) == 1, (
+                            "Multiple-column properties are not supported"
+                        )
+                        column = attr.columns[0]
+                        if not column.foreign_keys:
+                            converted_fields.append(
+                                self.convert(
+                                    name=attr.key, type=column.type, column=column
+                                )
+                            )
         return converted_fields
 
 
