@@ -127,18 +127,18 @@ class BaseSQLAModelConverter(BaseModelConverter):
                             ),
                         )
                     else:
-                        assert len(attr.columns) == 1, (
-                            "Multiple-column properties are not supported"
-                        )
+                        assert (
+                            len(attr.columns) == 1
+                        ), "Multiple-column properties are not supported"
                         column = attr.columns[0]
                         if not column.foreign_keys:
                             converted_field = self.convert(
                                 name=attr.key, type=column.type, column=column
                             )
-                            converted_fields.insert(
-                                0, converted_field
-                            ) if column.primary_key else converted_fields.append(
-                                converted_field
+                            (
+                                converted_fields.insert(0, converted_field)
+                                if column.primary_key
+                                else converted_fields.append(converted_field)
                             )
         return converted_fields
 
