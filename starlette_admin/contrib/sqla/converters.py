@@ -119,10 +119,12 @@ class BaseSQLAModelConverter(BaseModelConverter):
                         col.primary_key for col in attr.columns
                     )
                     if is_inherited_pk:
-                        # Just use the column as is, bypassing restrictions
                         column = attr.columns[0]
-                        converted_fields.append(
-                            self.convert(name=attr.key, type=column.type, column=column)
+                        converted_fields.insert(
+                            0,
+                            self.convert(
+                                name=attr.key, type=column.type, column=column
+                            ),
                         )
                     else:
                         assert len(attr.columns) == 1, (
@@ -130,10 +132,13 @@ class BaseSQLAModelConverter(BaseModelConverter):
                         )
                         column = attr.columns[0]
                         if not column.foreign_keys:
-                            converted_fields.append(
-                                self.convert(
-                                    name=attr.key, type=column.type, column=column
-                                )
+                            converted_field = self.convert(
+                                name=attr.key, type=column.type, column=column
+                            )
+                            converted_fields.insert(
+                                0, converted_field
+                            ) if column.primary_key else converted_fields.append(
+                                converted_field
                             )
         return converted_fields
 
